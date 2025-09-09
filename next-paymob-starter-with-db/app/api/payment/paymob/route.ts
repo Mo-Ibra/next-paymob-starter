@@ -70,6 +70,8 @@ export async function POST(request: NextRequest) {
     const paymobOrderData = await paymobOrderResponse.json()
     const paymobOrderId = paymobOrderData.id
 
+    console.log("Paymob order data", paymobOrderData);
+
     console.log("Paymob Order Id", paymobOrderId);
 
     await fetch(`${request.nextUrl.origin}/api/orders/${dbOrder.id}`, {
