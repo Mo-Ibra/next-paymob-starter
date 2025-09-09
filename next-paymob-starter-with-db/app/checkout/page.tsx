@@ -42,6 +42,9 @@ export default function CheckoutPage() {
       const orderData = {
         items,
         total,
+        customerName: formData.get("fullName") as string,
+        customerEmail: formData.get("email") as string,
+        customerPhone: formData.get("phone") as string,
         shippingAddress: {
           fullName: formData.get("fullName"),
           address: formData.get("address"),
@@ -53,7 +56,7 @@ export default function CheckoutPage() {
       }
 
       // Call Paymob payment API
-      const response = await fetch("/api/payment", {
+      const response = await fetch("/api/payment/paymob", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -133,6 +136,10 @@ export default function CheckoutPage() {
                     <div className="col-span-2">
                       <Label htmlFor="fullName">Full Name</Label>
                       <Input id="fullName" name="fullName" required />
+                    </div>
+                    <div className="col-span-2">
+                      <Label htmlFor="email">Email Address</Label>
+                      <Input id="email" name="email" type="email" required />
                     </div>
                     <div className="col-span-2">
                       <Label htmlFor="address">Address</Label>

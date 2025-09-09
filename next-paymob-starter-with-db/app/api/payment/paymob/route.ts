@@ -70,6 +70,8 @@ export async function POST(request: NextRequest) {
     const paymobOrderData = await paymobOrderResponse.json()
     const paymobOrderId = paymobOrderData.id
 
+    console.log("Paymob Order Id", paymobOrderId);
+
     await fetch(`${request.nextUrl.origin}/api/orders/${dbOrder.id}`, {
       method: "PATCH",
       headers: {
@@ -78,7 +80,7 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         paymob_order_id: paymobOrderId.toString(),
       }),
-    })
+    });
 
     // Step 3: Get payment key
     const paymentKeyResponse = await fetch("https://accept.paymob.com/api/acceptance/payment_keys", {
