@@ -67,8 +67,59 @@ export default function CheckoutPage() {
       const result = await response.json()
 
       if (result.success) {
-        // Redirect to Paymob payment page
-        window.location.href = result.paymentUrl
+        const popup = window.open(
+          result.paymentUrl,
+          "paymob-payment",
+          "width=600,height=700,scrollbars=yes,resizable=yes,status=yes,location=yes,toolbar=no,menubar=no",
+        )
+
+        // Listen for payment completion
+        const checkPaymentStatus = () => {
+          try {
+            // Check if popup is closed
+            if (popup?.closed) {
+              // Clear the interval
+              clearInterval(statusInterval)
+
+              // Check payment status and redirect to success page
+              router.push(`/payment/success?order_id=${result.orderId}&success=true`)
+              clearCart()
+            }
+          } catch (error) {
+            // Handle cross-origin errors
+            console.log("Checking popup status...")
+          }
+        }
+
+        // Check popup status every 1 second
+        const statusInterval = setInterval(checkPaymentStatus, 1000)
+
+        // Listen for messages from popup
+        const handleMessage = (event: MessageEvent) => {
+          if (event.origin !== window.location.origin) return
+
+          if (event.data.type === "PAYMENT_SUCCESS") {
+            clearInterval(statusInterval)
+            popup?.close()
+            router.push(
+              `/payment/success?order_id=${event.data.orderId}&transaction_id=${event.data.transactionId}&success=true`,
+            )
+            clearCart()
+            window.removeEventListener("message", handleMessage)
+          } else if (event.data.type === "PAYMENT_FAILED") {
+            clearInterval(statusInterval)
+            popup?.close()
+            alert("Payment failed. Please try again.")
+            window.removeEventListener("message", handleMessage)
+          }
+        }
+
+        window.addEventListener("message", handleMessage)
+
+        // Cleanup if popup is blocked
+        if (!popup) {
+          throw new Error("Popup blocked. Please allow popups for this site.")
+        }
       } else {
         throw new Error(result.error || "Payment failed")
       }
